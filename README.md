@@ -1,1 +1,1 @@
-link-https://69wqufbehsgvmqbkapphmkm.streamlit.app/?utm_source=chatgpt.com
+[Loan Approval Prediction](https://69wqufbehsgvmqbkapphmkm.streamlit.app/)
