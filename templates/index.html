@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🏦 LoanLens: Loan Approval AI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🏦</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef3f1; --card:#ffffff; --ink:#10261f; --muted:#5d716a; --line:#d8e2de;
+  --green:#0b6b4f; --green-d:#08523d; --amber:#e0a100; --red:#c2412d;
+  --field:#f6f9f8;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0c1714; --card:#13231e; --ink:#e8f1ee; --muted:#93a8a0; --line:#25392f; --field:#0f1d19; --green:#2fb88a; --green-d:#27a177; }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 48px}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}
+.brand{font-family:'Fraunces',serif;font-weight:700;font-size:1.5rem;display:flex;align-items:center;gap:10px}
+.brand span.logo{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--green);font-size:1.3rem}
+.tag{color:var(--muted);font-size:.9rem}
+
+.hero{margin-bottom:28px}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(2rem,4.5vw,3.2rem);line-height:1.1;margin:0 0 10px;max-width:16ch}
+.hero p{margin:0;color:var(--muted);max-width:52ch;font-size:1.05rem}
+
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;align-items:start}
+@media(max-width:880px){.grid{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+fieldset{border:0;margin:0 0 22px;padding:0}
+legend{font-weight:700;font-size:1.05rem;margin-bottom:12px;padding:0}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:5px}
+input,select{
+  width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--field);color:var(--ink);font:inherit;
+}
+input:focus,select:focus,button:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 45%,transparent);outline-offset:1px;border-color:var(--green)}
+.hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+
+button.go{
+  width:100%;padding:15px;border:0;border-radius:12px;background:var(--green);color:#fff;
+  font:700 1.05rem 'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:background .15s, transform .1s;
+}
+button.go:hover{background:var(--green-d)}
+button.go:active{transform:scale(.99)}
+button.go:disabled{opacity:.6;cursor:wait}
+
+/* result panel */
+.result{position:sticky;top:20px;text-align:center}
+.empty{color:var(--muted);padding:30px 6px}
+.empty .big{font-size:2.6rem}
+.gauge{width:100%;max-width:300px;margin:6px auto 0;display:block}
+.gauge .track{stroke:var(--line)}
+.gauge .fill{transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1), stroke .3s}
+.pct{font-family:'Fraunces',serif;font-size:2.6rem;font-weight:700;margin-top:-62px}
+.pct small{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:500;color:var(--muted)}
+.verdict{margin:34px 0 14px;padding:12px 14px;border-radius:12px;font-weight:700;font-size:1.1rem}
+.verdict.ok{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.verdict.no{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:10px}
+.stat b{display:block;font-size:1.1rem}
+.stat span{font-size:.78rem;color:var(--muted)}
+.risk{text-align:left;border-radius:12px;padding:12px 14px;font-size:.95rem;border-left:5px solid}
+.risk.low{border-color:var(--green);background:color-mix(in srgb,var(--green) 10%,transparent)}
+.risk.medium{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 14%,transparent)}
+.risk.high{border-color:var(--red);background:color-mix(in srgb,var(--red) 10%,transparent)}
+.err{color:var(--red);font-weight:600;padding:14px}
+
+.tips{margin-top:18px;padding:16px 18px;background:var(--card);border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:.9rem;text-align:left}
+.tips b{color:var(--ink)}
+footer{margin-top:36px;text-align:center;color:var(--muted);font-size:.85rem}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="logo">🏦</span> LoanLens</div>
+    <div class="tag">Powered by Machine Learning 🤖</div>
+  </header>
+
+  <section class="hero">
+    <h1>Will your loan get approved? 💸</h1>
+    <p>Enter your details and get an instant prediction, an approval chance, and a simple risk check.</p>
+  </section>
+
+  <div class="grid">
+    <!-- FORM -->
+    <form class="card" id="form" novalidate>
+      <fieldset>
+        <legend>👤 Personal details</legend>
+        <div class="row">
+          <div><label for="dependents">👨‍👩‍👧 Dependents</label>
+            <input id="dependents" type="number" min="0" max="10" value="0" required></div>
+          <div><label for="education">🎓 Education</label>
+            <select id="education"><option>Graduate</option><option>Not Graduate</option></select></div>
+          <div><label for="self_employed">💼 Self employed</label>
+            <select id="self_employed"><option>No</option><option>Yes</option></select></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>💰 Income and loan</legend>
+        <div class="row">
+          <div><label for="income">Annual income (₹)</label>
+            <input id="income" type="number" min="1" step="10000" value="500000" required></div>
+          <div><label for="loan_amount">Loan amount (₹)</label>
+            <input id="loan_amount" type="number" min="0" step="10000" value="1000000" required></div>
+          <div><label for="loan_term">📅 Loan term (years)</label>
+            <input id="loan_term" type="number" min="1" max="30" value="10" required></div>
+          <div><label for="cibil">📊 CIBIL score</label>
+            <input id="cibil" type="number" min="300" max="900" value="700" required>
+            <div class="hint">Between 300 and 900</div></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>🏠 Assets</legend>
+        <div class="row">
+          <div><label for="res_assets">🏡 Residential (₹)</label>
+            <input id="res_assets" type="number" min="0" step="10000" value="0"></div>
+          <div><label for="com_assets">🏢 Commercial (₹)</label>
+            <input id="com_assets" type="number" min="0" step="10000" value="0"></div>
+          <div><label for="lux_assets">💎 Luxury (₹)</label>
+            <input id="lux_assets" type="number" min="0" step="10000" value="0"></div>
+          <div><label for="bank_assets">🏦 Bank (₹)</label>
+            <input id="bank_assets" type="number" min="0" step="10000" value="0"></div>
+        </div>
+      </fieldset>
+
+      <button class="go" id="btn" type="submit">🔮 Check my loan</button>
+    </form>
+
+    <!-- RESULT -->
+    <aside>
+      <div class="card result" id="result" aria-live="polite">
+        <div class="empty"><div class="big">📋</div>Fill in the form and press <b>Check my loan</b> to see your result here.</div>
+      </div>
+      <div class="tips">
+        <b>📌 Tips</b><br>
+        ✅ A higher CIBIL score improves your chances.<br>
+        💰 Keep the loan close to your yearly income.<br>
+        🏠 More assets make the application stronger.
+      </div>
+    </aside>
+  </div>
+
+  <footer>Made with ❤️ using Flask and scikit-learn. A prediction is a guide, not a bank decision.</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const rupee = n => '₹' + Number(n).toLocaleString('en-IN');
+
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('btn');
+  btn.disabled = true; btn.textContent = '⏳ Checking...';
+
+  const payload = {
+    dependents: $('dependents').value, education: $('education').value,
+    self_employed: $('self_employed').value, income: $('income').value,
+    loan_amount: $('loan_amount').value, loan_term: $('loan_term').value,
+    cibil: $('cibil').value, res_assets: $('res_assets').value || 0,
+    com_assets: $('com_assets').value || 0, lux_assets: $('lux_assets').value || 0,
+    bank_assets: $('bank_assets').value || 0
+  };
+
+  try {
+    const r = await fetch('/predict', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Something went wrong.');
+    show(d);
+  } catch (err) {
+    $('result').innerHTML = `<div class="err">⚠️ ${err.message}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '🔮 Check my loan';
+  }
+});
+
+function show(d){
+  const color = d.probability >= 60 ? 'var(--green)' : d.probability >= 40 ? 'var(--amber)' : 'var(--red)';
+  const len = 251.3; // half-circle length for r=80
+  $('result').innerHTML = `
+    <svg class="gauge" viewBox="0 0 200 110" aria-hidden="true">
+      <path class="track" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke-width="16" stroke-linecap="round"/>
+      <path class="fill" id="arc" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="${color}"
+            stroke-width="16" stroke-linecap="round" stroke-dasharray="${len}" stroke-dashoffset="${len}"/>
+    </svg>
+    <div class="pct">${d.probability}%<small>approval chance</small></div>
+    <div class="verdict ${d.approved ? 'ok' : 'no'}">${d.approved ? '✅ Loan approved 🎉' : '❌ Loan rejected'}</div>
+    <div class="stats">
+      <div class="stat"><b>${d.loan_to_income}x</b><span>Loan to income</span></div>
+      <div class="stat"><b>${rupee(d.total_assets)}</b><span>Total assets</span></div>
+    </div>
+    <div class="risk ${d.risk_level}">
+      ${d.risk_level === 'low' ? '🟢' : d.risk_level === 'medium' ? '🟡' : '🔴'} ${d.advice}
+    </div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $('arc').style.strokeDashoffset = len * (1 - d.probability / 100);
+  }));
+  if (window.innerWidth < 880) $('result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+</body>
+</html>
